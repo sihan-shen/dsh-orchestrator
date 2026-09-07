@@ -2,6 +2,11 @@
   "name": "@ds-plugins/dsh-orchestrator",
   "version": "0.1.0",
   "description": "Evidence-first orchestration, scheduling, and verification bundle for DeepSeek Harness",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sihan-shen/dsh-orchestrator.git"
+  },
+  "homepage": "https://github.com/sihan-shen/dsh-orchestrator#readme",
   "packageManager": "pnpm@11.7.0",
   "engines": {
     "node": "^22.19.0 || >=24"
@@ -23,6 +28,9 @@
     "cordis.patch.yml",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
@@ -30,15 +38,14 @@
   },
   "scripts": {
     "build": "tsdown --out-dir lib",
-    "prepare": "pnpm run build",
     "prepack": "pnpm run build",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run --config vitest.config.ts",
     "test:package-entry": "pnpm run build && pnpm exec vitest run --config vitest.package-entry.config.ts"
   },
   "dependencies": {
-    "@ds-plugins/dsh-context": "git+https://github.com/sihan-shen/DS-Plugins.git#e4c98c4e278695d29fb1a09aa9dce23f10d064d2&path:/packages/dsh-context",
-    "@ds-plugins/dsh-scheduling-contracts": "git+https://github.com/sihan-shen/DS-Plugins.git#e4c98c4e278695d29fb1a09aa9dce23f10d064d2&path:/packages/dsh-scheduling-contracts"
+    "@ds-plugins/dsh-context": "^0.2.0",
+    "@ds-plugins/dsh-scheduling-contracts": "^0.3.0"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "4.0.1",
