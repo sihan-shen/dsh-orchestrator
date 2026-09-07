@@ -30,14 +30,15 @@
   },
   "scripts": {
     "build": "tsdown --out-dir lib",
+    "prepare": "pnpm run build",
     "prepack": "pnpm run build",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run --config vitest.config.ts",
     "test:package-entry": "pnpm run build && pnpm exec vitest run --config vitest.package-entry.config.ts"
   },
   "dependencies": {
-    "@ds-plugins/dsh-context": "^0.2.0",
-    "@ds-plugins/dsh-scheduling-contracts": "^0.3.0"
+    "@ds-plugins/dsh-context": "git+https://github.com/sihan-shen/DS-Plugins.git#d5d1caa61bf8e38d8b9946176bf02b63545aca9c&path:/packages/dsh-context",
+    "@ds-plugins/dsh-scheduling-contracts": "git+https://github.com/sihan-shen/DS-Plugins.git#d5d1caa61bf8e38d8b9946176bf02b63545aca9c&path:/packages/dsh-scheduling-contracts"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "4.0.1",
