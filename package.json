@@ -37,8 +37,8 @@
     "test:package-entry": "pnpm run build && pnpm exec vitest run --config vitest.package-entry.config.ts"
   },
   "dependencies": {
-    "@ds-plugins/dsh-context": "git+https://github.com/sihan-shen/DS-Plugins.git#d4337884d2f160291d04f43cd64a34c6946d6d5c&path:/packages/dsh-context",
-    "@ds-plugins/dsh-scheduling-contracts": "git+https://github.com/sihan-shen/DS-Plugins.git#d4337884d2f160291d04f43cd64a34c6946d6d5c&path:/packages/dsh-scheduling-contracts"
+    "@ds-plugins/dsh-context": "git+https://github.com/sihan-shen/DS-Plugins.git#e4c98c4e278695d29fb1a09aa9dce23f10d064d2&path:/packages/dsh-context",
+    "@ds-plugins/dsh-scheduling-contracts": "git+https://github.com/sihan-shen/DS-Plugins.git#e4c98c4e278695d29fb1a09aa9dce23f10d064d2&path:/packages/dsh-scheduling-contracts"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "4.0.1",
