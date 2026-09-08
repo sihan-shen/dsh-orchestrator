@@ -13,8 +13,6 @@ import {
 import type { SchedulerResolver } from '../src/scheduling.ts'
 import type { HandoffV1, OrchestratorConfig } from '../src/types.ts'
 
-Object.defineProperty(Session.prototype, 'events', { configurable: true, get(this: Session) { return this.snapshotEvents() } })
-
 function deferred<T>() {
   let resolve = (_value: T | PromiseLike<T>) => undefined
   const promise = new Promise<T>(settle => { resolve = settle })
@@ -137,7 +135,7 @@ describe('parallel execution generation lifecycle', () => {
       policy: { scope: 'dag', commands: [] },
     } as never)).rejects.toThrow(/policy.*(?:unknown|not supported)/u)
 
-    expect(generation.session.events).toEqual([])
+    expect(generation.session.snapshotEvents()).toEqual([])
     await generation.dispose()
   })
 
@@ -158,7 +156,7 @@ describe('parallel execution generation lifecycle', () => {
     expect(generation.starts[0]?.signal.reason).toBe('generation-disposed')
     expect(disposalSettled).toBe(false)
     expect((generation.ctx as unknown as { get(name: string): unknown }).get('parallelExecution')).toBe(generation.service)
-    expect(generation.session.events.filter(event => event.type === 'dsh-plugin/parallel-finished')).toEqual([])
+    expect(generation.session.snapshotEvents().filter(event => event.type === 'dsh-plugin/parallel-finished')).toEqual([])
 
     cleanup.resolve()
     await expect(running).rejects.toMatchObject({
@@ -190,7 +188,7 @@ describe('parallel execution generation lifecycle', () => {
     })
     await disposing
 
-    expect(generation.session.events).toEqual([])
+    expect(generation.session.snapshotEvents()).toEqual([])
     expect(generation.starts).toEqual([])
   })
 })

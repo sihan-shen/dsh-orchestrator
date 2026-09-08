@@ -465,7 +465,7 @@ describe('orchestrator scheduling adapter', () => {
       temperature: 0.2,
       stop: ['<stop>'],
     })
-    expect(root.events.map(event => event.type)).toEqual(['dsh-plugin/schedule-selected'])
+    expect(root.snapshotEvents().map(event => event.type)).toEqual(['dsh-plugin/schedule-selected'])
     dispose()
   })
 
@@ -491,8 +491,8 @@ describe('orchestrator scheduling adapter', () => {
       model: config.worker.model,
       maxTokens: config.worker.maxTokens,
     })
-    expect(root.events).toHaveLength(1)
-    expect(root.events[0]).toMatchObject({
+    expect(root.snapshotEvents()).toHaveLength(1)
+    expect(root.snapshotEvents()[0]).toMatchObject({
       type: 'dsh-plugin/schedule-selected',
       data: { target: 'root', source: 'profile-fallback' },
     })
@@ -536,7 +536,7 @@ describe('orchestrator scheduling adapter', () => {
     expect(first.model).toBe('baseline-disabled')
     expect(second.model).toBe('strong-disabled')
     expect(calls).toBe(2)
-    expect(root.events.filter(event => event.type === 'dsh-plugin/schedule-selected')).toHaveLength(2)
+    expect(root.snapshotEvents().filter(event => event.type === 'dsh-plugin/schedule-selected')).toHaveLength(2)
     dispose()
   })
 
@@ -548,7 +548,7 @@ describe('orchestrator scheduling adapter', () => {
       model: 'fallback-disabled',
     })
     const agent = { id: root.id, session: root } as Agent
-    let now = root.events[0]!.time
+    let now = root.snapshotEvents()[0]!.time
     const scheduler = createAdaptiveScheduler({
       policyVersion: 'v0.3.0',
       catalog: [
@@ -606,7 +606,7 @@ describe('orchestrator scheduling adapter', () => {
       mode: 'direct',
       budgets: { ...config.budgets, maxWorkers: 0 },
     }
-    const selectedAt = root.events[0]!.time
+    const selectedAt = root.snapshotEvents()[0]!.time
     const hydrated: unknown[][] = []
     let calls = 0
     const remountedScheduler = {

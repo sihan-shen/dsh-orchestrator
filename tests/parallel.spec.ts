@@ -213,7 +213,7 @@ function fixture(options: {
 }
 
 function eventData(session: Session, type: string): unknown[] {
-  return session.events.filter(event => event.type === type).map(event => event.data)
+  return session.snapshotEvents().filter(event => event.type === type).map(event => event.data)
 }
 
 function appendAnchor(session: Session, dagId: string): void {
@@ -241,7 +241,7 @@ describe('parallel runtime validation and deterministic identifiers', () => {
       code,
     })
 
-    expect(test.session.events).toEqual([])
+    expect(test.session.snapshotEvents()).toEqual([])
     expect(test.budgetRegistry.forRootSession(test.session.id).snapshot()).toEqual(before)
   })
 
@@ -254,7 +254,7 @@ describe('parallel runtime validation and deterministic identifiers', () => {
       policy: { scope: 'dag', commands: [] },
     } as never)).rejects.toThrow(/policy|unknown/u)
 
-    expect(test.session.events).toEqual([])
+    expect(test.session.snapshotEvents()).toEqual([])
     expect(test.budgetRegistry.forRootSession(test.session.id).snapshot()).toEqual(before)
   })
 
@@ -276,7 +276,7 @@ describe('parallel runtime validation and deterministic identifiers', () => {
     expect(caught?.issues?.[0]).toMatchObject({ code: 'overlapping-access' })
     expect(Object.isFrozen(caught?.issues)).toBe(true)
     expect(Object.isFrozen(caught?.issues?.[0])).toBe(true)
-    expect(test.session.events).toEqual([])
+    expect(test.session.snapshotEvents()).toEqual([])
   })
 
   it('scans only parser-valid same-root anchors and rejects ordinal 1000 before append', async () => {
@@ -286,14 +286,14 @@ describe('parallel runtime validation and deterministic identifiers', () => {
     appendAnchor(session, 'parallel-root:dag:1000-corrupt')
     appendAnchor(session, 'parallel-root:dag:999')
     const test = fixture({ session })
-    const eventCount = session.events.length
+    const eventCount = session.snapshotEvents().length
     const before = test.budgetRegistry.forRootSession(session.id).snapshot()
 
     await expect(test.runtime.run(test.request(dag([{ id: 'a' }])))).rejects.toMatchObject({
       code: 'DAG_ID_EXHAUSTED',
     })
 
-    expect(session.events).toHaveLength(eventCount)
+    expect(session.snapshotEvents()).toHaveLength(eventCount)
     expect(test.budgetRegistry.forRootSession(session.id).snapshot()).toEqual(before)
   })
 
@@ -305,7 +305,7 @@ describe('parallel runtime validation and deterministic identifiers', () => {
 
     expect(first.dagId).toBe('parallel-root:dag:1')
     expect(second.dagId).toBe('parallel-root:dag:2')
-    expect(test.session.events[0]).toMatchObject({
+    expect(test.session.snapshotEvents()[0]).toMatchObject({
       type: 'dsh-plugin/parallel-started',
       data: {
         dagId: 'parallel-root:dag:1',

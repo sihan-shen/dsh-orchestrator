@@ -50,7 +50,7 @@ interface BootedContext {
 
 interface AppBoot {
   healProfilesModuleFallback(installAnchor: string, home: string): void
-  loadProfile(binName: string, name: string, installAnchor: string, home: string): LoadedProfile
+  loadProfile(options: { installAnchor: string; profile?: string; home?: string }): Promise<LoadedProfile>
   composeEntries(layers: readonly (readonly Record<string, unknown>[])[]): ProfileEntry[]
   boot(
     binName: string,
@@ -209,7 +209,11 @@ export async function loadActualProfile(options: ProfileLoadOptions): Promise<Lo
     const resolver = profileRequire(profileDir)
     const dshBaseManifest = resolver.resolve('@deepseek-ai/dsh-base/package.json')
     appBoot.healProfilesModuleFallback(dshBaseManifest, root)
-    const profile = appBoot.loadProfile('dsh-orchestrator-loader-test', profileName, dshBaseManifest, root)
+    const profile = await appBoot.loadProfile({
+      installAnchor: dshBaseManifest,
+      profile: profileName,
+      home: root,
+    })
     const profilePatches = [
       ...profile.layers.flatMap(layer => layer.patches),
       ...profile.patches,

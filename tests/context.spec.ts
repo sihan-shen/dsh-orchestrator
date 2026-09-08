@@ -107,6 +107,7 @@ function sessionAgent(id = 'context-root', parentSession?: string) {
     id: SessionId(id),
     createdAt: 0,
     cwd: '/workspace/ds-plugins',
+    isSeeded: false,
     ...(parentSession === undefined ? {} : { parentSession: SessionId(parentSession) }),
   })
   return { session }

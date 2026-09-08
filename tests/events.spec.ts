@@ -11,8 +11,6 @@ import {
 } from '../src/events.ts'
 import type { HandoffV1, VerificationEvidenceV1, WorkerSpecV1 } from '../src/types.ts'
 
-Object.defineProperty(Session.prototype, 'events', { configurable: true, get(this: Session) { return this.snapshotEvents() } })
-
 const workerSpec: WorkerSpecV1 = {
   schemaVersion: 1,
   task: 'Add durable orchestrator events.',
@@ -66,13 +64,13 @@ describe('durable orchestrator events', () => {
 
     expect(appendScheduleSelected(session, input)).toBe(0)
     ;(input as { model: string }).model = 'mutated'
-    expect(session.events[0]).toMatchObject({
+    expect(session.snapshotEvents()[0]).toMatchObject({
       type: 'dsh-plugin/schedule-selected',
       data: { model: 'baseline-disabled' },
     })
-    expect(JSON.stringify(session.events[0])).not.toContain('credential')
+    expect(JSON.stringify(session.snapshotEvents()[0])).not.toContain('credential')
     expect(() => session.append('dsh-plugin/schedule-selected', input)).not.toThrow()
-    expect(JSON.parse(JSON.stringify(session.events))).toEqual(session.events)
+    expect(JSON.parse(JSON.stringify(session.snapshotEvents()))).toEqual(session.snapshotEvents())
   })
 
   it('appends required orchestration records in order and returns their sequence numbers', () => {
@@ -92,21 +90,21 @@ describe('durable orchestrator events', () => {
     })).toBe(3)
     expect(appendVerificationFinished(session, verification)).toBe(4)
 
-    expect(session.events.map(event => event.type)).toEqual([
+    expect(session.snapshotEvents().map(event => event.type)).toEqual([
       'dsh-plugin/run-started',
       'dsh-plugin/worker-requested',
       'dsh-plugin/worker-finished',
       'dsh-plugin/budget-rejected',
       'dsh-plugin/verification-finished',
     ])
-    expect(session.events.map(event => event.ignorable)).toEqual([
+    expect(session.snapshotEvents().map(event => event.ignorable)).toEqual([
       undefined,
       undefined,
       undefined,
       undefined,
       undefined,
     ])
-    expect(session.events).toMatchObject([
+    expect(session.snapshotEvents()).toMatchObject([
       {
         data: {
           schemaVersion: 1,
@@ -133,21 +131,22 @@ describe('durable orchestrator events', () => {
       },
       { data: verification },
     ])
-    expect(session.events[1]?.data).toEqual(workerSpec)
-    expect(session.events[2]?.data).toEqual({
+    expect(session.snapshotEvents()[1]?.data).toEqual(workerSpec)
+    expect(session.snapshotEvents()[2]?.data).toEqual({
       schemaVersion: 1,
       childSessionId: 'child-session',
       handoff,
     })
-    expect(session.events[1]?.data).not.toHaveProperty('fanoutId')
-    expect(session.events[1]?.data).not.toHaveProperty('workerRef')
-    expect(session.events[2]?.data).not.toHaveProperty('fanoutId')
-    expect(session.events[2]?.data).not.toHaveProperty('workerRef')
+    expect(session.snapshotEvents()[1]?.data).not.toHaveProperty('fanoutId')
+    expect(session.snapshotEvents()[1]?.data).not.toHaveProperty('workerRef')
+    expect(session.snapshotEvents()[2]?.data).not.toHaveProperty('fanoutId')
+    expect(session.snapshotEvents()[2]?.data).not.toHaveProperty('workerRef')
   })
 
   it('projects a seeded child from inheritedEventCount rather than its full seed length', () => {
     const parent = Session.create(SessionId('seed-parent'))
     appendRunStarted(parent, { mode: 'direct', provider: 'parent-provider', model: 'parent-model' })
+    appendWorkerRequested(parent, workerSpec)
     const child = Session.create(SessionId('seed-child'), parent.snapshotEvents(), {
       version: 0,
       id: SessionId('seed-child'),
@@ -159,7 +158,9 @@ describe('durable orchestrator events', () => {
 
     expect(child.header.isSeeded).toBe(true)
     expect(child.inheritedEventCount).toBe(SessionLogOffset(1))
+    expect(child.snapshotEvents()).toHaveLength(4)
     expect(child.ownEvents().map(event => event.type)).toEqual([
+      'dsh-plugin/worker-requested',
       'session/end-seed',
       'dsh-plugin/worker-requested',
     ])
@@ -212,20 +213,20 @@ describe('durable orchestrator events', () => {
     mutableHandoff.changedFiles.push('src/after-append.ts')
     mutableHandoff.decisions.push('Mutated after append.')
 
-    expect(session.events[1]?.data).toMatchObject({ allowedTools: ['read', 'edit'] })
-    expect(session.events[2]?.data).toMatchObject({
+    expect(session.snapshotEvents()[1]?.data).toMatchObject({ allowedTools: ['read', 'edit'] })
+    expect(session.snapshotEvents()[2]?.data).toMatchObject({
       handoff: {
         changedFiles: ['src/events.ts'],
         decisions: ['Events are required during replay.'],
         verification: [{ args: ['typecheck'] }],
       },
     })
-    expect(session.events[4]?.data).toMatchObject({ args: ['typecheck'] })
-    expect(JSON.parse(JSON.stringify(session.events))).toEqual(session.events)
-    expectDeepFrozen(session.events[1]?.data)
-    expectDeepFrozen(session.events[2]?.data)
+    expect(session.snapshotEvents()[4]?.data).toMatchObject({ args: ['typecheck'] })
+    expect(JSON.parse(JSON.stringify(session.snapshotEvents()))).toEqual(session.snapshotEvents())
+    expectDeepFrozen(session.snapshotEvents()[1]?.data)
+    expectDeepFrozen(session.snapshotEvents()[2]?.data)
 
-    const keys = payloadKeys(session.events.map(event => event.data))
+    const keys = payloadKeys(session.snapshotEvents().map(event => event.data))
     expect(keys).not.toContain('authorization')
     expect(keys).not.toContain('token')
     expect(keys).not.toContain('transcript')

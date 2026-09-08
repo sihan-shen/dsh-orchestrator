@@ -16,8 +16,6 @@ import {
   type ParallelWorkerRunInput,
 } from '../src/parallel-worker.ts'
 
-Object.defineProperty(Session.prototype, 'events', { configurable: true, get(this: Session) { return this.snapshotEvents() } })
-
 const workerRef = `w:${'a'.repeat(32)}`
 const handoff: HandoffV1 = {
   schemaVersion: 1,
@@ -127,7 +125,7 @@ function fixture(start: (signal: AbortSignal) => Promise<SubagentRun> = async ()
 }
 
 function workerFinishedEvents(fixtureValue: RuntimeFixture) {
-  return fixtureValue.input.parent.session.events.filter(event => event.type === 'dsh-plugin/worker-finished')
+  return fixtureValue.input.parent.session.snapshotEvents().filter(event => event.type === 'dsh-plugin/worker-finished')
 }
 
 function realisticThirtyKiBHandoff(): HandoffV1 {
@@ -159,7 +157,7 @@ describe('admitted parallel leaf worker', () => {
 
     const terminal = await runParallelWorker(runtime.input)
 
-    expect(runtime.input.parent.session.events.map(event => event.type)).toEqual([
+    expect(runtime.input.parent.session.snapshotEvents().map(event => event.type)).toEqual([
       'dsh-plugin/schedule-selected',
       'dsh-plugin/worker-requested',
       'dsh-plugin/worker-finished',
@@ -174,7 +172,7 @@ describe('admitted parallel leaf worker', () => {
       nodeResult: { status: 'completed', reason: 'completed', workerRef },
       acceptedHandoff: { changedFiles: ['src/a.ts'] },
     })
-    expect(runtime.input.parent.session.events[2]?.data).toEqual({
+    expect(runtime.input.parent.session.snapshotEvents()[2]?.data).toEqual({
       schemaVersion: 1,
       workerRef,
       handoff,
@@ -195,7 +193,7 @@ describe('admitted parallel leaf worker', () => {
 
     await runParallelWorker(runtime.input)
 
-    const durable = JSON.stringify(runtime.input.parent.session.events)
+    const durable = JSON.stringify(runtime.input.parent.session.snapshotEvents())
     expect(durable).not.toContain('child-session-raw')
     expect(durable).not.toContain('RAW_OUTPUT_SECRET')
     expect(durable).not.toContain('RAW_DIAGNOSTIC_SECRET')
@@ -330,7 +328,7 @@ describe('admitted parallel leaf worker', () => {
     expect(terminal.acceptedHandoff).toBeUndefined()
     expect(terminal.ownershipViolation).toMatchObject({ nodeId: 'leaf-a', count: 1 })
     expect(workerFinishedEvents(runtime)).toHaveLength(1)
-    expect(JSON.stringify(runtime.input.parent.session.events)).not.toContain('not-declared.ts')
+    expect(JSON.stringify(runtime.input.parent.session.snapshotEvents())).not.toContain('not-declared.ts')
   })
 
   it('rejects an oversized but valid Handoff without worker-finished publication', async () => {
@@ -404,7 +402,7 @@ describe('admitted parallel leaf worker', () => {
 
     expect(runtime.dispose).toHaveBeenCalledTimes(1)
     expect(workerFinishedEvents(runtime)).toHaveLength(0)
-    expect(JSON.stringify(runtime.input.parent.session.events)).not.toContain('child-session-raw')
+    expect(JSON.stringify(runtime.input.parent.session.snapshotEvents())).not.toContain('child-session-raw')
   })
 
   it('disposes a published run exactly once and preserves a settlement exception', async () => {
@@ -480,6 +478,6 @@ describe('admitted parallel leaf worker', () => {
     expect(workerFinishedEvents(runtime)[0]?.data).toMatchObject({
       handoff: { status: 'failed', summary: 'Worker cleanup failed before completion.' },
     })
-    expect(JSON.stringify(runtime.input.parent.session.events)).not.toContain('RAW_DISPOSE_SECRET')
+    expect(JSON.stringify(runtime.input.parent.session.snapshotEvents())).not.toContain('RAW_DISPOSE_SECRET')
   })
 })

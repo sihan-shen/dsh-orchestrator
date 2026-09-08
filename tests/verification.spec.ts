@@ -307,6 +307,7 @@ describe('targeted_verify tool definition', () => {
       id: SessionId('verification-tool-session'),
       createdAt: 0,
       cwd: `${workspaceRoot}/packages/dsh-orchestrator`,
+      isSeeded: false,
     })
     const subprocess = new FakeSubprocess(() => handle(Promise.resolve({ exitCode: 0, signal: null })))
     const admitPluginTool = vi.fn(() => ({ allowed: false as const, code: 'PLUGIN_TOOL_LIMIT', limit: 0, observed: 1 }))
@@ -332,7 +333,7 @@ describe('targeted_verify tool definition', () => {
     )).rejects.toThrow(/PLUGIN_TOOL_LIMIT/)
     expect(admitPluginTool).toHaveBeenCalledWith('targeted_verify')
     expect(subprocess.spawns).toEqual([])
-    expect(session.events.filter(event => event.type === 'dsh-plugin/verification-finished')).toEqual([])
+    expect(session.snapshotEvents().filter(event => event.type === 'dsh-plugin/verification-finished')).toEqual([])
   })
 
   it('prevalidates requests before budget admission and uses the supplied repository root', async () => {
@@ -341,6 +342,7 @@ describe('targeted_verify tool definition', () => {
       id: SessionId('verification-valid-tool-session'),
       createdAt: 0,
       cwd: `${workspaceRoot}/packages/dsh-orchestrator`,
+      isSeeded: false,
     })
     const subprocess = new FakeSubprocess(() => handle(Promise.resolve({ exitCode: 0, signal: null })))
     const admitPluginTool = vi.fn(() => ({ allowed: true as const }))
@@ -370,7 +372,7 @@ describe('targeted_verify tool definition', () => {
 
     expect(admitPluginTool).not.toHaveBeenCalled()
     expect(subprocess.spawns).toEqual([])
-    expect(session.events.filter(event => event.type === 'dsh-plugin/verification-finished')).toEqual([])
+    expect(session.snapshotEvents().filter(event => event.type === 'dsh-plugin/verification-finished')).toEqual([])
 
     await expect(tool.execute(
       { command: 'typecheck', args: [] },
@@ -380,7 +382,7 @@ describe('targeted_verify tool definition', () => {
     expect(admitPluginTool).toHaveBeenCalledTimes(1)
     expect(subprocess.spawns).toHaveLength(1)
     expect(subprocess.spawns[0]?.cwd).toBe(workspaceRoot)
-    expect(session.events.filter(event => event.type === 'dsh-plugin/verification-finished')).toHaveLength(1)
+    expect(session.snapshotEvents().filter(event => event.type === 'dsh-plugin/verification-finished')).toHaveLength(1)
   })
 
   it.each(['', '/workspace\0ds-plugins'])('rejects an invalid trusted repository root at tool construction', value => {
@@ -441,6 +443,7 @@ describe('bundle targeted verification registration', () => {
       id: SessionId('verification-apply-session'),
       createdAt: 0,
       cwd: `${workspaceRoot}/nested-session-directory`,
+      isSeeded: false,
     })
 
     apply(ctx as never, config as never)

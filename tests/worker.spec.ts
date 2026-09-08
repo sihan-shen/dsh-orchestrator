@@ -11,8 +11,6 @@ import { mountRootScheduling, type ResolvedScheduleV1, type SchedulerResolver } 
 import { createDelegateWorkerTool, HANDOFF_V1_JSON_SCHEMA, mountSingleWorkerMode, runWorker, SINGLE_WORKER_STARTUP_TIMEOUT_MS } from '../src/worker.ts'
 import type { HandoffV1, OrchestratorConfig } from '../src/types.ts'
 
-Object.defineProperty(Session.prototype, 'events', { configurable: true, get(this: Session) { return this.snapshotEvents() } })
-
 const workspaceRoot = '/workspace/ds-plugins'
 
 const config: OrchestratorConfig = {
@@ -348,11 +346,11 @@ describe('one-shot worker runtime', () => {
 
     await expect(running).resolves.toEqual(validHandoff)
     expect(run.dispose).toHaveBeenCalledTimes(1)
-    expect(parent.session.events.map(event => event.type)).toEqual([
+    expect(parent.session.snapshotEvents().map(event => event.type)).toEqual([
       'dsh-plugin/worker-requested',
       'dsh-plugin/worker-finished',
     ])
-    expect(parent.session.events[1]).toMatchObject({
+    expect(parent.session.snapshotEvents()[1]).toMatchObject({
       data: { childSessionId: SessionId('child-worker-session'), handoff: validHandoff },
     })
     expect(injected).toEqual([])
@@ -382,8 +380,8 @@ describe('one-shot worker runtime', () => {
 
     expect(handoff.status).toBe(status)
     expect(JSON.stringify(handoff)).not.toContain('SECRET_TRANSCRIPT_MARKER')
-    expect(parent.session.events.filter(event => event.type === 'dsh-plugin/worker-finished')).toHaveLength(1)
-    expect(JSON.stringify(parent.session.events)).not.toContain('SECRET_TRANSCRIPT_MARKER')
+    expect(parent.session.snapshotEvents().filter(event => event.type === 'dsh-plugin/worker-finished')).toHaveLength(1)
+    expect(JSON.stringify(parent.session.snapshotEvents())).not.toContain('SECRET_TRANSCRIPT_MARKER')
     expect(injected).toEqual([])
     expect(run.dispose).toHaveBeenCalledTimes(1)
   })
@@ -423,11 +421,11 @@ describe('one-shot worker runtime', () => {
 
     expect(handoff).toMatchObject({ status: 'failed', changedFiles: [], verification: [] })
     expect(JSON.stringify(handoff)).not.toContain('SECRET_TRANSCRIPT_MARKER')
-    expect(parent.session.events.map(event => event.type)).toEqual([
+    expect(parent.session.snapshotEvents().map(event => event.type)).toEqual([
       'dsh-plugin/worker-requested',
       'dsh-plugin/worker-finished',
     ])
-    expect(JSON.stringify(parent.session.events)).not.toContain('SECRET_TRANSCRIPT_MARKER')
+    expect(JSON.stringify(parent.session.snapshotEvents())).not.toContain('SECRET_TRANSCRIPT_MARKER')
     expect(injected).toEqual([])
     expect(run.dispose).toHaveBeenCalledTimes(1)
   })
@@ -448,7 +446,7 @@ describe('one-shot worker runtime', () => {
 
     expect(handoff).toMatchObject({ status: 'failed', changedFiles: [], verification: [] })
     expect(JSON.stringify(handoff)).not.toContain('SECRET_TRANSCRIPT_MARKER')
-    expect(parent.session.events.map(event => event.type)).toEqual(['dsh-plugin/worker-requested'])
+    expect(parent.session.snapshotEvents().map(event => event.type)).toEqual(['dsh-plugin/worker-requested'])
     expect(injected).toEqual([])
   })
 
@@ -463,7 +461,7 @@ describe('one-shot worker runtime', () => {
 
     await expect(runWorker(options)).resolves.toMatchObject({ status: 'failed' })
     expect(subagents.starts).toBe(0)
-    expect(options.parent.session.events).toEqual([])
+    expect(options.parent.session.snapshotEvents()).toEqual([])
   })
 
   it('returns a blocked handoff before publication when the caller is already cancelled', async () => {
@@ -485,7 +483,7 @@ describe('one-shot worker runtime', () => {
     expect(handoff).toMatchObject({ status: 'blocked', changedFiles: [], verification: [] })
     expect(JSON.stringify(handoff)).not.toContain('SECRET_TRANSCRIPT_MARKER')
     expect(subagents.requests).toEqual([])
-    expect(parent.session.events).toEqual([])
+    expect(parent.session.snapshotEvents()).toEqual([])
     expect(injected).toEqual([])
   })
 
@@ -515,11 +513,11 @@ describe('one-shot worker runtime', () => {
     })
 
     await expect(running).resolves.toMatchObject({ status: 'blocked' })
-    expect(parent.session.events.map(event => event.type)).toEqual([
+    expect(parent.session.snapshotEvents().map(event => event.type)).toEqual([
       'dsh-plugin/worker-requested',
       'dsh-plugin/worker-finished',
     ])
-    expect(JSON.stringify(parent.session.events)).not.toContain('SECRET_TRANSCRIPT_MARKER')
+    expect(JSON.stringify(parent.session.snapshotEvents())).not.toContain('SECRET_TRANSCRIPT_MARKER')
     expect(injected).toEqual([])
     expect(run.dispose).toHaveBeenCalledTimes(1)
   })
@@ -699,7 +697,7 @@ describe('delegate_worker tool', () => {
     )).rejects.toThrow('SCHEDULE_DECISION_INVALID')
     expect(controller.snapshot()).toEqual(before)
     expect(subagents.starts).toBe(0)
-    expect(parent.session.events).toEqual([])
+    expect(parent.session.snapshotEvents()).toEqual([])
   })
 
   it('abandons a schedule that resolves after cancellation before changing budget or publishing events', async () => {
@@ -743,7 +741,7 @@ describe('delegate_worker tool', () => {
 
     await expect(running).rejects.toBe(cancellation)
     expect(controller.snapshot()).toEqual(before)
-    expect(parent.session.events).toEqual([])
+    expect(parent.session.snapshotEvents()).toEqual([])
     expect(subagents.starts).toBe(0)
     expect(scheduledTaskId).toMatch(/^worker:[0-9a-f-]{36}$/)
     expect(scheduledTaskId).not.toBe(String(parent.session.id))
@@ -790,12 +788,12 @@ describe('delegate_worker tool', () => {
       { signal: new AbortController().signal, agent: parent, deferContext } as never,
     )).resolves.toMatchObject({ status: expectedStatus })
 
-    expect(parent.session.events.map(event => event.type)).toEqual([
+    expect(parent.session.snapshotEvents().map(event => event.type)).toEqual([
       'dsh-plugin/schedule-selected',
       'dsh-plugin/worker-requested',
       'dsh-plugin/worker-finished',
     ])
-    expect(parent.session.events[1]).toMatchObject({
+    expect(parent.session.snapshotEvents()[1]).toMatchObject({
       data: { provider: 'provider-disabled', model: 'strong-disabled', reasoningEffort: 'high', maxTokens: 64_000 },
     })
     expect(subagents.requests[0]).toMatchObject({
@@ -803,7 +801,7 @@ describe('delegate_worker tool', () => {
       maxDepth: 1,
       toolFilter: { allow: ['targeted_verify'] },
     })
-    expect(subagents.requests[0]?.agentOptions).not.toHaveProperty('reasoningEffort')
+    expect(subagents.requests[0]?.agentOptions).toMatchObject({ reasoningEffort: 'high' })
     expect(observed).toHaveLength(2)
     const scheduledTaskId = (observed[0] as { request: { taskId: string } }).request.taskId
     expect(scheduledTaskId).toMatch(/^worker:[0-9a-f-]{36}$/)
@@ -866,7 +864,7 @@ describe('delegate_worker tool', () => {
       outcome: 'budget-rejected',
       budgetRejection: { code: 'PLUGIN_TOOL_LIMIT', limit: 0, observed: 1 },
     }])
-    expect(parent.session.events).toEqual([])
+    expect(parent.session.snapshotEvents()).toEqual([])
     expect(subagents.starts).toBe(0)
     expect(scheduledTaskId).toMatch(/^worker:[0-9a-f-]{36}$/)
     expect(scheduledTaskId).not.toBe(String(parent.session.id))
@@ -1104,7 +1102,7 @@ describe('single-worker service lifecycle', () => {
       temperature: 0.2,
       stop: ['<stop>'],
     })
-    expect(root.events.map(event => event.type)).toEqual(['dsh-plugin/schedule-selected'])
+    expect(root.snapshotEvents().map(event => event.type)).toEqual(['dsh-plugin/schedule-selected'])
 
     root.append('request/header', { header: { config: result }, reason: 'initial' })
     const missingModel = mounted.ctx.sessions.create(SessionId('worker-scheduled-missing-model'), {
@@ -1123,14 +1121,14 @@ describe('single-worker service lifecycle', () => {
     } as never)
     await Promise.resolve()
 
-    expect(root.events.map(event => event.type)).toEqual([
+    expect(root.snapshotEvents().map(event => event.type)).toEqual([
       'dsh-plugin/schedule-selected',
       'request/header',
       'dsh-plugin/run-started',
     ])
-    expect(root.events[2]).toMatchObject({ data: { provider: 'provider-disabled', model: 'strong-disabled' } })
-    expect(missingModel.events.filter(event => event.type === 'dsh-plugin/run-started')).toEqual([])
-    expect(malformedConfig.events.filter(event => event.type === 'dsh-plugin/run-started')).toEqual([])
+    expect(root.snapshotEvents()[2]).toMatchObject({ data: { provider: 'provider-disabled', model: 'strong-disabled' } })
+    expect(missingModel.snapshotEvents().filter(event => event.type === 'dsh-plugin/run-started')).toEqual([])
+    expect(malformedConfig.snapshotEvents().filter(event => event.type === 'dsh-plugin/run-started')).toEqual([])
 
     await mounted.fiber.dispose()
     await mounted.sessionStore.dispose()
@@ -1161,13 +1159,13 @@ describe('single-worker service lifecycle', () => {
     } as never)
     await Promise.resolve()
 
-    expect(routed.events.filter(event => event.type === 'dsh-plugin/run-started')).toEqual([
+    expect(routed.snapshotEvents().filter(event => event.type === 'dsh-plugin/run-started')).toEqual([
       expect.objectContaining({
         data: expect.objectContaining({ mode: 'single-worker', provider: 'deepseek', model: 'deepseek-reasoner' }),
       }),
     ])
-    expect(missingModel.events.filter(event => event.type === 'dsh-plugin/run-started')).toEqual([])
-    expect(malformedConfig.events.filter(event => event.type === 'dsh-plugin/run-started')).toEqual([])
+    expect(missingModel.snapshotEvents().filter(event => event.type === 'dsh-plugin/run-started')).toEqual([])
+    expect(malformedConfig.snapshotEvents().filter(event => event.type === 'dsh-plugin/run-started')).toEqual([])
 
     await mounted.fiber.dispose()
     await mounted.sessionStore.dispose()

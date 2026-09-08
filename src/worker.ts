@@ -1,6 +1,6 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type { Agent, AgentOptions } from '@deepseek-ai/dsh-agent'
-import { boundContextSummary, createUserMessage } from '@deepseek-ai/dsh-llm'
+import { boundContextSummary, createUserMessage, ReasoningEffortId } from '@deepseek-ai/dsh-llm'
 import type { Session, SessionId } from '@deepseek-ai/dsh-session'
 import type { SubagentCapabilities, SubagentRun, SubagentRuntime, SubagentStartRequest } from '@deepseek-ai/dsh-subagent'
 import type {} from '@deepseek-ai/dsh-subprocess'
@@ -172,6 +172,7 @@ export function workerStartRequest(
     provider: spec.provider,
     model: spec.model,
     maxTokens: spec.maxTokens,
+    ...(spec.reasoningEffort === undefined ? {} : { reasoningEffort: ReasoningEffortId(spec.reasoningEffort) }),
   }
   return {
     prompt: [{

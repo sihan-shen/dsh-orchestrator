@@ -182,9 +182,9 @@ describe('strict worker event unions', () => {
 
     expect(parseWorkerRequestedV1(legacyTargetedVerifyWorkerSpec, 'legacy')).toEqual(legacyTargetedVerifyWorkerSpec)
     expect(appendWorkerRequested(session, legacyTargetedVerifyWorkerSpec)).toBe(0)
-    expect(session.events[0]?.data).toEqual(legacyTargetedVerifyWorkerSpec)
-    expect(session.events[0]?.data).not.toHaveProperty('fanoutId')
-    expect(session.events[0]?.data).not.toHaveProperty('workerRef')
+    expect(session.snapshotEvents()[0]?.data).toEqual(legacyTargetedVerifyWorkerSpec)
+    expect(session.snapshotEvents()[0]?.data).not.toHaveProperty('fanoutId')
+    expect(session.snapshotEvents()[0]?.data).not.toHaveProperty('workerRef')
   })
 
   it('continues rejecting targeted_verify on the parallel worker-requested branch', () => {
@@ -193,7 +193,7 @@ describe('strict worker event unions', () => {
 
     expect(() => parseWorkerRequestedV1(parallelRequest, 'parallel')).toThrow(/targeted_verify/u)
     expect(() => appendParallelWorkerRequested(session, parallelRequest)).toThrow(/targeted_verify/u)
-    expect(session.events).toEqual([])
+    expect(session.snapshotEvents()).toEqual([])
   })
 
   it('round-trips byte-compatible legacy requested and finished branches', () => {
@@ -394,7 +394,7 @@ describe('parallel event manifests and payload ceilings', () => {
       parallelWorkerRequest,
       () => MAX_PARALLEL_WORKER_REQUESTED_PAYLOAD_BYTES + 1,
     )).toThrow(/payload ceiling/u)
-    expect(session.events).toEqual([])
+    expect(session.snapshotEvents()).toEqual([])
   })
 
   it('rejects an over-limit worker-finished payload before writing Session state', () => {
@@ -402,7 +402,7 @@ describe('parallel event manifests and payload ceilings', () => {
     const over = schemaValidParallelFinishedAt(MAX_PARALLEL_WORKER_FINISHED_PAYLOAD_BYTES + 1)
 
     expect(() => appendParallelWorkerFinished(session, over)).toThrow(/payload ceiling/u)
-    expect(session.events).toEqual([])
+    expect(session.snapshotEvents()).toEqual([])
   })
 })
 
@@ -430,13 +430,13 @@ describe('parallel durable event append helpers', () => {
     expect(appendParallelWorkerRequested(session, mutableRequest)).toBe(1)
     expect(appendParallelWorkerFinished(session, mutableFinished)).toBe(2)
     expect(appendParallelFinished(session, mutableAggregate)).toBe(3)
-    expect(session.events.map(event => event.type)).toEqual([
+    expect(session.snapshotEvents().map(event => event.type)).toEqual([
       'dsh-plugin/parallel-started',
       'dsh-plugin/worker-requested',
       'dsh-plugin/worker-finished',
       'dsh-plugin/parallel-finished',
     ])
-    expect(session.events.map(event => event.data)).toEqual([
+    expect(session.snapshotEvents().map(event => event.data)).toEqual([
       parallelStarted,
       parallelWorkerRequest,
       parallelWorkerFinished,
@@ -448,15 +448,15 @@ describe('parallel durable event append helpers', () => {
     mutableHandoff.changedFiles.push('mutated-after-append.ts')
     mutableHandoff.decisions.push('Mutated after append.')
 
-    expect(session.events.map(event => event.data)).toEqual([
+    expect(session.snapshotEvents().map(event => event.data)).toEqual([
       parallelStarted,
       parallelWorkerRequest,
       parallelWorkerFinished,
       parallelAggregate,
     ])
-    for (const event of session.events) expectDeepFrozen(event.data)
-    expect(JSON.parse(JSON.stringify(session.events))).toEqual(session.events)
-    expect(payloadKeys(session.events.map(event => event.data))).not.toEqual(expect.arrayContaining([
+    for (const event of session.snapshotEvents()) expectDeepFrozen(event.data)
+    expect(JSON.parse(JSON.stringify(session.snapshotEvents()))).toEqual(session.snapshotEvents())
+    expect(payloadKeys(session.snapshotEvents().map(event => event.data))).not.toEqual(expect.arrayContaining([
       'authorization',
       'credential',
       'token',
@@ -482,6 +482,6 @@ describe('parallel durable event append helpers', () => {
           : appendParallelWorkerFinished
 
     expect(() => append(session, value as never)).toThrow()
-    expect(session.events).toEqual([])
+    expect(session.snapshotEvents()).toEqual([])
   })
 })

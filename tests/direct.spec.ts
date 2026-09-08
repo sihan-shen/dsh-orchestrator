@@ -5,8 +5,6 @@ import SessionStore, { Session, SessionId } from '@deepseek-ai/dsh-session'
 import { apply, inject } from '../src/index.ts'
 import type { OrchestratorConfig } from '../src/types.ts'
 
-Object.defineProperty(Session.prototype, 'events', { configurable: true, get(this: Session) { return this.snapshotEvents() } })
-
 const config: OrchestratorConfig = {
   workspaceRoot: '/workspace/ds-plugins',
   mode: 'direct',
@@ -161,7 +159,7 @@ describe('Direct orchestrator mode', () => {
     })
     await Promise.resolve()
 
-    expect(root.events.filter(event => event.type === 'dsh-plugin/run-started')).toEqual([
+    expect(root.snapshotEvents().filter(event => event.type === 'dsh-plugin/run-started')).toEqual([
       expect.objectContaining({
         data: {
           schemaVersion: 1,
@@ -191,16 +189,16 @@ describe('Direct orchestrator mode', () => {
       async () => ({ provider: 'profile-disabled', model: 'profile-disabled', temperature: 0.2 }),
     )
     expect(result).toMatchObject({ provider: 'provider-disabled', model: 'strong-disabled', maxTokens: 64_000, temperature: 0.2 })
-    expect(root.events.map(event => event.type)).toEqual(['dsh-plugin/schedule-selected'])
+    expect(root.snapshotEvents().map(event => event.type)).toEqual(['dsh-plugin/schedule-selected'])
 
     root.append('request/header', { header: { config: result }, reason: 'initial' })
     await Promise.resolve()
-    expect(root.events.map(event => event.type)).toEqual([
+    expect(root.snapshotEvents().map(event => event.type)).toEqual([
       'dsh-plugin/schedule-selected',
       'request/header',
       'dsh-plugin/run-started',
     ])
-    expect(root.events[2]).toMatchObject({ data: { provider: 'provider-disabled', model: 'strong-disabled' } })
+    expect(root.snapshotEvents()[2]).toMatchObject({ data: { provider: 'provider-disabled', model: 'strong-disabled' } })
 
     await mounted.fiber.dispose()
     await mounted.sessionStore.dispose()
@@ -216,7 +214,7 @@ describe('Direct orchestrator mode', () => {
 
     const root = appendRootRequest(first.ctx, 'direct-remount-root')
     await Promise.resolve()
-    expect(root.events.filter(event => event.type === 'dsh-plugin/run-started')).toHaveLength(1)
+    expect(root.snapshotEvents().filter(event => event.type === 'dsh-plugin/run-started')).toHaveLength(1)
 
     await secondFiber.dispose()
     await first.sessionStore.dispose()
@@ -236,13 +234,13 @@ describe('Direct orchestrator mode', () => {
     })
     await Promise.resolve()
 
-    expect(routed.events.filter(event => event.type === 'dsh-plugin/run-started')).toEqual([
+    expect(routed.snapshotEvents().filter(event => event.type === 'dsh-plugin/run-started')).toEqual([
       expect.objectContaining({
         data: expect.objectContaining({ mode: 'direct', provider: 'deepseek', model: 'deepseek-reasoner' }),
       }),
     ])
-    expect(missingModel.events.filter(event => event.type === 'dsh-plugin/run-started')).toEqual([])
-    expect(malformedConfig.events.filter(event => event.type === 'dsh-plugin/run-started')).toEqual([])
+    expect(missingModel.snapshotEvents().filter(event => event.type === 'dsh-plugin/run-started')).toEqual([])
+    expect(malformedConfig.snapshotEvents().filter(event => event.type === 'dsh-plugin/run-started')).toEqual([])
 
     await mounted.fiber.dispose()
     await mounted.sessionStore.dispose()
@@ -252,7 +250,7 @@ describe('Direct orchestrator mode', () => {
     const first = await mountedDirectMode()
     const root = appendRootRequest(first.ctx, 'direct-hmr-root')
     await Promise.resolve()
-    expect(root.events.filter(event => event.type === 'dsh-plugin/run-started')).toHaveLength(1)
+    expect(root.snapshotEvents().filter(event => event.type === 'dsh-plugin/run-started')).toHaveLength(1)
 
     await first.fiber.dispose()
     const secondFiber = await first.ctx.plugin(apply, config)
@@ -262,7 +260,7 @@ describe('Direct orchestrator mode', () => {
     })
     await Promise.resolve()
 
-    expect(root.events.filter(event => event.type === 'dsh-plugin/run-started')).toHaveLength(1)
+    expect(root.snapshotEvents().filter(event => event.type === 'dsh-plugin/run-started')).toHaveLength(1)
 
     await secondFiber.dispose()
     await first.sessionStore.dispose()
@@ -284,8 +282,8 @@ describe('Direct orchestrator mode', () => {
     const replacement = appendRootRequest(mounted.ctx, 'direct-reused-root')
     await Promise.resolve()
 
-    expect(disposed.events.filter(event => event.type === 'dsh-plugin/run-started')).toHaveLength(0)
-    expect(replacement.events.filter(event => event.type === 'dsh-plugin/run-started')).toHaveLength(1)
+    expect(disposed.snapshotEvents().filter(event => event.type === 'dsh-plugin/run-started')).toHaveLength(0)
+    expect(replacement.snapshotEvents().filter(event => event.type === 'dsh-plugin/run-started')).toHaveLength(1)
 
     await mounted.fiber.dispose()
     await mounted.sessionStore.dispose()
