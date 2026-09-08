@@ -50,7 +50,7 @@ interface BootedContext {
 
 interface AppBoot {
   healProfilesModuleFallback(installAnchor: string, home: string): void
-  loadProfile(options: { installAnchor: string; profile?: string; home?: string }): Promise<LoadedProfile>
+  loadProfile(binName: string, name: string, installAnchor: string, home?: string): LoadedProfile
   composeEntries(layers: readonly (readonly Record<string, unknown>[])[]): ProfileEntry[]
   boot(
     binName: string,
@@ -183,7 +183,7 @@ async function copyActualProfile(root: string, profileName: 'v0.1' | 'v0.3-adapt
       join(profileDir, 'node_modules', '@ds-plugins', 'dsh-scheduling-contracts'),
       process.platform === 'win32' ? 'junction' : 'dir',
     )
-    await mkdir(join(root, 'packages/dsh-adaptive-scheduler/node_modules/@ds-plugins'), { recursive: true })
+    await mkdir(join(root, 'packages/dsh-adaptive-scheduler/node_modules/@han_05'), { recursive: true })
     await symlink(
       join(root, 'packages/dsh-scheduling-contracts'),
       join(root, 'packages/dsh-adaptive-scheduler/node_modules/@han_05/dsh-scheduling-contracts'),
@@ -209,11 +209,7 @@ export async function loadActualProfile(options: ProfileLoadOptions): Promise<Lo
     const resolver = profileRequire(profileDir)
     const dshBaseManifest = resolver.resolve('@deepseek-ai/dsh-base/package.json')
     appBoot.healProfilesModuleFallback(dshBaseManifest, root)
-    const profile = await appBoot.loadProfile({
-      installAnchor: dshBaseManifest,
-      profile: profileName,
-      home: root,
-    })
+    const profile = appBoot.loadProfile('dsh-orchestrator-loader-test', profileName, dshBaseManifest, root)
     const profilePatches = [
       ...profile.layers.flatMap(layer => layer.patches),
       ...profile.patches,
