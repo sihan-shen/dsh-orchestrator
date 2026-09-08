@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import type { SubagentProvider, SubagentRuntime } from '@deepseek-ai/dsh-subagent'
-import { SINGLE_WORKER_STARTUP_TIMEOUT_MS } from '@ds-plugins/dsh-orchestrator'
+import { SINGLE_WORKER_STARTUP_TIMEOUT_MS } from '@han_05/dsh-orchestrator'
 
 const repositoryRoot = resolve(fileURLToPath(new URL('.', import.meta.url)), '../../..')
 const sourceProfileDir = join(repositoryRoot, 'profiles/v0.1')
@@ -186,7 +186,7 @@ async function copyActualProfile(root: string, profileName: 'v0.1' | 'v0.3-adapt
     await mkdir(join(root, 'packages/dsh-adaptive-scheduler/node_modules/@ds-plugins'), { recursive: true })
     await symlink(
       join(root, 'packages/dsh-scheduling-contracts'),
-      join(root, 'packages/dsh-adaptive-scheduler/node_modules/@ds-plugins/dsh-scheduling-contracts'),
+      join(root, 'packages/dsh-adaptive-scheduler/node_modules/@han_05/dsh-scheduling-contracts'),
       process.platform === 'win32' ? 'junction' : 'dir',
     )
     await symlink(
@@ -233,7 +233,7 @@ export async function loadActualProfile(options: ProfileLoadOptions): Promise<Lo
       : undefined
     const patches = [
       ...profilePatches,
-      ...(options.telemetryStorageRoot === undefined ? [] : [{ insert: [{ id: 'dsh-telemetry', name: '@ds-plugins/dsh-telemetry', config: { enabled: true, storageRoot: options.telemetryStorageRoot } }] }]),
+      ...(options.telemetryStorageRoot === undefined ? [] : [{ insert: [{ id: 'dsh-telemetry', name: '@han_05/dsh-telemetry', config: { enabled: true, storageRoot: options.telemetryStorageRoot } }] }]),
       ...disabledRows(entries, [
         ...(options.enableSubagents ? ['subagent'] : []),
         ...(profileName === 'v0.3-adaptive' ? ['dsh-adaptive-scheduler'] : []),
@@ -254,7 +254,7 @@ export async function loadActualProfile(options: ProfileLoadOptions): Promise<Lo
         rootAdaptiveLink = candidate
       }
     }
-    const resolvedOrchestratorEntry = resolver.resolve('@ds-plugins/dsh-orchestrator')
+    const resolvedOrchestratorEntry = resolver.resolve('@han_05/dsh-orchestrator')
     const context = await appBoot.boot(
       'dsh-orchestrator-loader-test',
       join(profile.dir, 'cordis.yml'),
@@ -345,7 +345,7 @@ async function withActualProfile<T>(options: ProfileLoadOptions, callback: (runt
 
 describe('built DSH v0.1 profile Loader composition', () => {
   it('requires the test command to build the profile-resolved package entry', () => {
-    const entry = profileRequire(sourceProfileDir).resolve('@ds-plugins/dsh-orchestrator')
+    const entry = profileRequire(sourceProfileDir).resolve('@han_05/dsh-orchestrator')
     expect(entry).toMatch(/[\\/]packages[\\/]dsh-orchestrator[\\/]lib[\\/]index\.mjs$/)
   })
 
@@ -356,7 +356,7 @@ describe('built DSH v0.1 profile Loader composition', () => {
       expect(runtime.resolvedOrchestratorEntry).toMatch(/[\\/]packages[\\/]dsh-orchestrator[\\/]lib[\\/]index\.mjs$/)
       expect(runtime.resolvedOrchestratorEntry).not.toMatch(/[\\/]src[\\/]/)
       const entry = [...runtime.context.loader.entries()].find(candidate => candidate.id === 'include:ds-orchestrator')
-      expect(entry?.options.name).toBe('@ds-plugins/dsh-orchestrator')
+      expect(entry?.options.name).toBe('@han_05/dsh-orchestrator')
       const services = await injectedServices(runtime.context)
       expect(services.tools.get('targeted_verify')).toBeDefined()
       expect(services.tools.get('delegate_worker')).toBeUndefined()

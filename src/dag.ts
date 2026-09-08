@@ -1,7 +1,7 @@
 import {
   parseDagValidationLimitsV1,
   repoPathContains,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import type {
   DagValidationIssueV1,
   DagValidationLimitsV1,
@@ -10,7 +10,7 @@ import type {
   RepoPathDeclaration,
   TaskDagV1,
   TaskNodeV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 
 type EligibleNodes = Map<string, TaskNodeV1>
 

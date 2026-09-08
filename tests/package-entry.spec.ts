@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 describe('published orchestrator package entry', () => {
   it('exports every durable event append helper through the package name', async () => {
-    const entry = await import('@ds-plugins/dsh-orchestrator')
+    const entry = await import('@han_05/dsh-orchestrator')
 
     expect(entry.appendRunStarted).toEqual(expect.any(Function))
     expect(entry.appendWorkerRequested).toEqual(expect.any(Function))

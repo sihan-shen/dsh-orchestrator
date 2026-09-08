@@ -1,14 +1,14 @@
-# `@ds-plugins/dsh-orchestrator` v0.1
+# `@han_05/dsh-orchestrator` v0.1
 
-`@ds-plugins/dsh-orchestrator` is an out-of-tree DeepSeek Harness (DSH) bundle for a small, evidence-first coding-agent loop. It composes with the official `@deepseek-ai/dsh-base` bundle and never replaces the DSH agent loop or provider implementation.
+`@han_05/dsh-orchestrator` is an out-of-tree DeepSeek Harness (DSH) bundle for a small, evidence-first coding-agent loop. It composes with the official `@deepseek-ai/dsh-base` bundle and never replaces the DSH agent loop or provider implementation.
 
 ## Status and compatibility
 
 - Parent repository: [DS-Plugins](https://github.com/sihan-shen/DS-Plugins)
 - DSH dependency line: `0.1.1-rc.2`
 - Cordis peer dependency: `4.0.1`
-- Shared plugin dependencies: `@ds-plugins/dsh-context` `^0.2.0` and
-  `@ds-plugins/dsh-scheduling-contracts` `^0.3.0`
+- Shared plugin dependencies: `@han_05/dsh-context` `^0.2.0` and
+  `@han_05/dsh-scheduling-contracts` `^0.3.0`
 - Availability: the bundle is used by the parent repository's `v0.1` and
   `v0.2c-context` profiles. It is prepared for standalone publication but is
   not yet published to npm; it requires the scheduling-contracts package to be
@@ -20,7 +20,7 @@ After the shared contract packages are published, install it with its DSH host
 dependencies:
 
 ```sh
-pnpm add @ds-plugins/dsh-orchestrator
+pnpm add @han_05/dsh-orchestrator
 ```
 
 The bundle is loaded by the host through the included

@@ -11,13 +11,13 @@ import {
   parseParallelAggregateV1,
   serializedPayloadBytes,
   utf8ByteLength,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import type {
   OwnershipViolationSummaryV1,
   ParallelAggregateV1,
   ParallelNodeResultV1,
   VerificationOutcomeV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import { MAX_HANDOFF_ITEMS } from './config.js'
 import type { HandoffV1, VerificationEvidenceV1 } from './types.js'
 

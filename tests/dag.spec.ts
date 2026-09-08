@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { DagValidationIssueV1, DagValidationLimitsV1 } from '@ds-plugins/dsh-scheduling-contracts'
-import { parseTaskDagV1 } from '@ds-plugins/dsh-scheduling-contracts'
+import type { DagValidationIssueV1, DagValidationLimitsV1 } from '@han_05/dsh-scheduling-contracts'
+import { parseTaskDagV1 } from '@han_05/dsh-scheduling-contracts'
 import { compareDagValidationIssues, validateTaskDagV1 } from '../src/dag.ts'
 
 const profile = {

@@ -8,7 +8,7 @@ import {
   assertSerializedPayloadLimit,
   serializedPayloadBytes,
   type ParallelAggregateV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import {
   appendParallelFinished,
   appendParallelStarted,

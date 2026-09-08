@@ -1,6 +1,6 @@
 import type { Session, SessionId } from '@deepseek-ai/dsh-session'
-import { parseScheduleSelectedV1 } from '@ds-plugins/dsh-scheduling-contracts'
-import type { ParallelAggregateV1, ScheduleSelectedV1 } from '@ds-plugins/dsh-scheduling-contracts'
+import { parseScheduleSelectedV1 } from '@han_05/dsh-scheduling-contracts'
+import type { ParallelAggregateV1, ScheduleSelectedV1 } from '@han_05/dsh-scheduling-contracts'
 import {
   parseWorkerFinishedV1,
   parseWorkerRequestedV1,

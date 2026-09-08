@@ -2,7 +2,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { createUserMessage } from '@deepseek-ai/dsh-llm'
 import type { Session } from '@deepseek-ai/dsh-session'
 import type { ToolDefinition, ToolRunContext } from '@deepseek-ai/dsh-tools'
-import { parseContextBlockV1 } from '@ds-plugins/dsh-context'
+import { parseContextBlockV1 } from '@han_05/dsh-context'
 import { MAX_CONTEXT_BLOCK_BYTES } from './config.js'
 import type { ContextBlockV1, ContextCompiler, OrchestratorConfig } from './types.js'
 

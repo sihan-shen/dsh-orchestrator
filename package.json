@@ -1,5 +1,5 @@
 {
-  "name": "@ds-plugins/dsh-orchestrator",
+  "name": "@han_05/dsh-orchestrator",
   "version": "0.1.0",
   "description": "Evidence-first orchestration, scheduling, and verification bundle for DeepSeek Harness",
   "repository": {
@@ -38,14 +38,15 @@
   },
   "scripts": {
     "build": "tsdown --out-dir lib",
+    "prepare": "pnpm run build",
     "prepack": "pnpm run build",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run --config vitest.config.ts",
     "test:package-entry": "pnpm run build && pnpm exec vitest run --config vitest.package-entry.config.ts"
   },
   "dependencies": {
-    "@ds-plugins/dsh-context": "^0.2.0",
-    "@ds-plugins/dsh-scheduling-contracts": "^0.3.0"
+    "@han_05/dsh-context": "^0.2.0",
+    "@han_05/dsh-scheduling-contracts": "^0.3.0"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "4.0.1",

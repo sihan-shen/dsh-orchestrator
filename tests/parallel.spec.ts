@@ -6,7 +6,7 @@ import {
   parseTaskDagV1,
   type TaskDagV1,
   type TaskNodeV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import { createBudgetControllerRegistry, type BudgetRejection } from '../src/budgets.ts'
 import { appendVerificationFinished } from '../src/events.ts'
 import { appendParallelStarted } from '../src/parallel-events.ts'

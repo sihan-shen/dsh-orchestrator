@@ -2,13 +2,13 @@ import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { Context } from '@deepseek-ai/cordis'
 import type { Session, SessionId } from '@deepseek-ai/dsh-session'
 import type { SubagentRuntime } from '@deepseek-ai/dsh-subagent'
-import { sha256Utf8 } from '@ds-plugins/dsh-context'
+import { sha256Utf8 } from '@han_05/dsh-context'
 import {
   MAX_DAG_ID_ORDINAL,
   MAX_DAG_LEVELS,
   MAX_DAG_NODES,
   parseParallelAggregateV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import type {
   DagValidationIssueV1,
   DagValidationLimitsV1,
@@ -18,7 +18,7 @@ import type {
   ParallelVerificationPolicyV1,
   TaskDagV1,
   TaskNodeV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import { buildParallelAggregate } from './aggregate.js'
 import type { BudgetController, BudgetControllerRegistry } from './budgets.js'
 import { validateTaskDagV1 } from './dag.js'

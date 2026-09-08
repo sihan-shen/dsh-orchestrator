@@ -1,13 +1,13 @@
 import {
   MAX_SCHEDULING_LATENCY_MS,
   parseCapabilityRequestV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import type {
   CapabilityRequestV1,
   BudgetViewV1,
   ScheduleDecisionV1,
   TaskNodeV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import { routeToolFilterKey } from './config.js'
 import {
   resolveScheduleFromRequest,

@@ -13,7 +13,7 @@ import {
   type HandoffV1,
   type ParallelNodeResultV1,
   type VerificationEvidenceV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import {
   boundOwnershipViolationSection,
   buildParallelAggregate,

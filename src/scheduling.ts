@@ -8,7 +8,7 @@ import {
   parseCapabilityRequestV1,
   parseScheduleDecisionV1,
   parseScheduleSelectedV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import type {
   AdaptiveSchedulerService,
   BudgetViewV1,
@@ -17,7 +17,7 @@ import type {
   RouteDecisionV1,
   ScheduleDecisionV1,
   ScheduleSelectedV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import type { BudgetControllerRegistry } from './budgets.js'
 import { appendScheduleSelected } from './events.js'
 import type { HandoffV1, OrchestratorConfig } from './types.js'

@@ -19,12 +19,12 @@ import {
   parseScheduleFeedbackV1,
   serializedPayloadBytes,
   utf8ByteLength,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import type {
   CorrelationTripleV1 as ContractCorrelationTripleV1,
   ExpectedEventBranch as ContractExpectedEventBranch,
   ParallelAggregateV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import type { HandoffV1, WorkerSpecV1 } from './types.js'
 
 /** Correlation fields shared by all parallel worker records. */

@@ -2,7 +2,7 @@ import type {
   CapabilityProfileV1,
   ParallelVerificationPolicyV1,
   RouteDecisionV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 
 /** Caller-argument policy for one deployment-controlled verification program. */
 export type VerificationAllowedArgs = 'none' | 'orchestrator-test-paths'

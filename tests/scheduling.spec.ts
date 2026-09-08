@@ -3,7 +3,7 @@ import { Context } from '@deepseek-ai/cordis'
 import { agentEvents, type Agent } from '@deepseek-ai/dsh-agent'
 import { ReasoningEffortId } from '@deepseek-ai/dsh-llm'
 import { Session, SessionId, type SessionEvent } from '@deepseek-ai/dsh-session'
-import { createAdaptiveScheduler } from '@ds-plugins/dsh-adaptive-scheduler'
+import { createAdaptiveScheduler } from '@han_05/dsh-adaptive-scheduler'
 import {
   buildCapabilityRequest,
   fixedProfileSchedule,

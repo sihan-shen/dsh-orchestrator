@@ -5,7 +5,7 @@ import {
   MAX_DAG_CHANGED_FILES,
   parseRepoPathDeclaration,
   type RepoFilePath,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import { MAX_HANDOFF_ITEMS, MAX_HANDOFF_STRING_BYTES } from '../src/config.ts'
 import {
   checkOwnership,

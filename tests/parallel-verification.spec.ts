@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { ParallelVerificationPolicyV1 } from '@ds-plugins/dsh-scheduling-contracts'
+import type { ParallelVerificationPolicyV1 } from '@han_05/dsh-scheduling-contracts'
 import { BudgetController, type BudgetRejection } from '../src/budgets.ts'
 import {
   foldFinalLevelVerification,

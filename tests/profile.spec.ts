@@ -69,11 +69,11 @@ describe('DSH v0.1 profile', () => {
 
     expect(manifest.dsh?.profile?.bundles).toEqual([
       '@deepseek-ai/dsh-base',
-      '@ds-plugins/dsh-orchestrator',
+      '@han_05/dsh-orchestrator',
     ])
     expect(rows.some(row => row.id === 'ds-orchestrator')).toBe(true)
     expect(rows.find(row => row.id === 'ds-orchestrator')?.name)
-      .toBe('@ds-plugins/dsh-orchestrator')
+      .toBe('@han_05/dsh-orchestrator')
 
     const orchestrator = rows.find(row => row.id === 'ds-orchestrator')
     expect(orchestrator?.config).toMatchObject({
@@ -114,8 +114,8 @@ describe('DSH v0.3 adaptive profile', () => {
 
     expect(v03Manifest.dsh?.profile?.bundles).toEqual([
       '@deepseek-ai/dsh-base',
-      '@ds-plugins/dsh-orchestrator',
-      '@ds-plugins/dsh-adaptive-scheduler',
+      '@han_05/dsh-orchestrator',
+      '@han_05/dsh-adaptive-scheduler',
     ])
     expect(v03Patch).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: 'ds-orchestrator' }),

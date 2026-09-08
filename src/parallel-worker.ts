@@ -8,7 +8,7 @@ import {
   type ParallelNodeResultV1,
   type ScheduleSelectedV1,
   type TaskNodeV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import { appendScheduleSelected } from './events.js'
 import {
   appendParallelWorkerFinished,

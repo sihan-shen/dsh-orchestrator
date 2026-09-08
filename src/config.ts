@@ -4,8 +4,8 @@ import {
   MAX_SCHEDULING_ITEMS,
   MAX_SCHEDULING_LATENCY_MS,
   parseRouteDecisionV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
-import type { RouteDecisionV1 } from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
+import type { RouteDecisionV1 } from '@han_05/dsh-scheduling-contracts'
 import { validateParallelVerificationPolicy } from './verification.js'
 import type { OrchestratorConfig, ParallelConfigV1, VerificationAllowedArgs, VerificationCommand } from './types.js'
 
@@ -291,7 +291,7 @@ export function parseConfig(value: unknown): OrchestratorConfig {
 export const Config = {
   '~standard': {
     version: 1 as const,
-    vendor: '@ds-plugins/dsh-orchestrator',
+    vendor: '@han_05/dsh-orchestrator',
     validate(value: unknown) {
       try {
         return { value: parseConfig(value) }

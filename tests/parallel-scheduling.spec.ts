@@ -7,7 +7,7 @@ import {
   type RouteDecisionV1,
   type ScheduleDecisionV1,
   type TaskNodeV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import {
   buildParallelCapabilityRequest,
   resolveParallelNodeSchedule,

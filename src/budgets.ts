@@ -1,7 +1,7 @@
 import type { Context } from '@deepseek-ai/cordis'
 import type { SessionId } from '@deepseek-ai/dsh-session'
-import { MAX_PARALLEL_WORKERS, parseBudgetViewV1 } from '@ds-plugins/dsh-scheduling-contracts'
-import type { BudgetViewV1 } from '@ds-plugins/dsh-scheduling-contracts'
+import { MAX_PARALLEL_WORKERS, parseBudgetViewV1 } from '@han_05/dsh-scheduling-contracts'
+import type { BudgetViewV1 } from '@han_05/dsh-scheduling-contracts'
 import type { OrchestratorConfig } from './types.js'
 
 /** The only plugin-owned tools counted by the v0.1 action budget. */

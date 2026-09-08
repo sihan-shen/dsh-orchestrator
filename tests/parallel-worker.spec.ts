@@ -7,7 +7,7 @@ import {
   serializedPayloadBytes,
   parseTaskDagV1,
   type TaskNodeV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import type { HandoffV1 } from '../src/types.ts'
 import type { ResolvedScheduleV1 } from '../src/scheduling.ts'
 import {

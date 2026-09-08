@@ -1,7 +1,7 @@
 import type {
   ParallelVerificationPolicyV1,
   VerificationOutcomeV1,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import type { BudgetController } from './budgets.js'
 import type { VerificationEvidenceV1 } from './types.js'
 import type { VerificationService } from './verification.js'

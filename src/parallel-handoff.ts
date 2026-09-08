@@ -5,13 +5,13 @@ import {
   parseRepoFilePath,
   repoPathContains,
   utf8ByteLength,
-} from '@ds-plugins/dsh-scheduling-contracts'
-import { sha256Utf8 as contextSha256Utf8 } from '@ds-plugins/dsh-context'
+} from '@han_05/dsh-scheduling-contracts'
+import { sha256Utf8 as contextSha256Utf8 } from '@han_05/dsh-context'
 import type {
   OwnershipViolationSummaryV1,
   RepoFilePath,
   RepoPathDeclaration,
-} from '@ds-plugins/dsh-scheduling-contracts'
+} from '@han_05/dsh-scheduling-contracts'
 import { MAX_HANDOFF_ITEMS, MAX_HANDOFF_STRING_BYTES } from './config.js'
 import { createHandoff } from './handoff.js'
 import type { HandoffV1, VerificationEvidenceV1 } from './types.js'
