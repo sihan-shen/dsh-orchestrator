@@ -104,7 +104,7 @@ export interface ParallelRuntimeOptions {
   readonly config: OrchestratorConfig
   readonly budgetRegistry: Pick<BudgetControllerRegistry, 'forRootSession'>
   readonly schedulerResolver: SchedulerResolver
-  readonly subagents: Pick<SubagentRuntime, 'start'>
+  readonly subagents: Pick<SubagentRuntime, 'start' | 'getProvider'>
   readonly appendAggregate: typeof appendParallelFinished
   /** Bind durable verification evidence to the parent session for one run. */
   readonly verificationServiceFor?: (session: Session) => VerificationService
@@ -196,7 +196,7 @@ function parseParallelRunEnvelope(value: unknown): ParallelRunRequestV1 {
     throw new TypeError('parallel run request.parent must have a session')
   }
   const session = parent.session
-  if (typeof session.id !== 'string' || !Array.isArray(session.events) || !isRecord(session.header)) {
+  if (typeof session.id !== 'string' || typeof session.snapshotEvents !== 'function' || !isRecord(session.header)) {
     throw new TypeError('parallel run request.parent.session is invalid')
   }
   if (!isAbortSignal(signal)) throw new TypeError('parallel run request.signal must be an AbortSignal')
@@ -232,10 +232,13 @@ function throwIfGenerationDisposed(signal: AbortSignal | undefined): void {
 }
 
 function guardedSubagents(
-  subagents: Pick<SubagentRuntime, 'start'>,
+  subagents: Pick<SubagentRuntime, 'start' | 'getProvider'>,
   signal: AbortSignal,
-): Pick<SubagentRuntime, 'start'> {
+): Pick<SubagentRuntime, 'start' | 'getProvider'> {
   return {
+    getProvider(name) {
+      return subagents.getProvider?.(name)
+    },
     start(provider, request) {
       if (signal.aborted) return Promise.reject(signal.reason)
       return subagents.start(provider, request)
@@ -271,7 +274,7 @@ function anchoredOrdinal(dagId: string, rootId: string): number | undefined {
 export function allocateDagId(session: Session): { readonly dagId: string; readonly ordinal: number } {
   const rootId = assertRootSessionId(session)
   let maximum = 0
-  for (const event of session.events) {
+  for (const event of session.snapshotEvents()) {
     let dagId: string
     try {
       if (event.type === 'dsh-plugin/parallel-started') {
@@ -485,7 +488,7 @@ async function runExecutableLevel(
   executable: readonly ExecutableEntryV1[],
   parent: Agent,
   signal: AbortSignal,
-  subagents: Pick<SubagentRuntime, 'start'>,
+  subagents: Pick<SubagentRuntime, 'start' | 'getProvider'>,
   registerWorkerId: (workerId: SessionId) => string,
 ): Promise<void> {
   const outcomes = await Promise.all(executable.map(async (item): Promise<WorkerOutcomeV1> => {

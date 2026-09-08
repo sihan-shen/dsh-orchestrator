@@ -2,7 +2,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import type { Agent, AgentOptions } from '@deepseek-ai/dsh-agent'
 import { boundContextSummary, createUserMessage } from '@deepseek-ai/dsh-llm'
 import type { Session, SessionId } from '@deepseek-ai/dsh-session'
-import type { SubagentRun, SubagentRuntime, SubagentStartRequest } from '@deepseek-ai/dsh-subagent'
+import type { SubagentCapabilities, SubagentRun, SubagentRuntime, SubagentStartRequest } from '@deepseek-ai/dsh-subagent'
 import type {} from '@deepseek-ai/dsh-subprocess'
 import type { ObjectJsonSchema, ToolDefinition } from '@deepseek-ai/dsh-tools'
 import type { ScheduleFeedbackV1, RouteDecisionV1 } from '@han_05/dsh-scheduling-contracts'
@@ -67,13 +67,13 @@ export interface RunWorkerOptions extends DelegateWorkerInput {
   readonly resolvedSchedule: ResolvedScheduleV1
   readonly parent: Agent
   readonly signal: AbortSignal
-  readonly subagents: Pick<SubagentRuntime, 'start'>
+  readonly subagents: Pick<SubagentRuntime, 'start' | 'getProvider'>
 }
 
 /** Dependencies required to define the model-facing delegation tool. */
 export interface DelegateWorkerToolOptions {
   readonly config: OrchestratorConfig
-  readonly subagents: Pick<SubagentRuntime, 'start'>
+  readonly subagents: Pick<SubagentRuntime, 'start' | 'getProvider'>
   readonly budgetRegistry: Pick<BudgetControllerRegistry, 'forRootSession'>
   readonly schedulerResolver: SchedulerResolver
 }
@@ -162,7 +162,12 @@ export function workerSpec(input: DelegateWorkerInput, resolvedRoute: RouteDecis
 }
 
 /** Build the one-shot child request shared by legacy and parallel workers. */
-export function workerStartRequest(spec: WorkerSpecV1, parent: Agent, signal: AbortSignal): SubagentStartRequest {
+export function workerStartRequest(
+  spec: WorkerSpecV1,
+  parent: Agent,
+  signal: AbortSignal,
+  capabilities: SubagentCapabilities,
+): SubagentStartRequest {
   const agentOptions: AgentOptions = {
     provider: spec.provider,
     model: spec.model,
@@ -175,10 +180,10 @@ export function workerStartRequest(spec: WorkerSpecV1, parent: Agent, signal: Ab
     }],
     parent,
     signal,
-    agentOptions,
-    outputSchema: HANDOFF_V1_JSON_SCHEMA,
-    maxDepth: 1,
-    toolFilter: { allow: [...spec.allowedTools] },
+    ...(capabilities.agentOptions ? { agentOptions } : {}),
+    ...(capabilities.outputSchema ? { outputSchema: HANDOFF_V1_JSON_SCHEMA } : {}),
+    ...(capabilities.depthLimit ? { maxDepth: 1 } : {}),
+    ...(capabilities.toolFilter ? { toolFilter: { allow: [...spec.allowedTools] } } : {}),
   }
 }
 
@@ -247,11 +252,24 @@ export async function runWorker(options: RunWorkerOptions): Promise<HandoffV1> {
   if (options.signal.aborted) return blockedHandoff('Worker was cancelled before publication.')
 
   const spec = workerSpec(input, options.resolvedSchedule.decision.route)
+  const provider = options.subagents.getProvider('spawn')
+  if (provider?.capabilities.agentOptions === false) {
+    return failedHandoff('Worker provider does not support route overrides.')
+  }
   appendWorkerRequested(options.parent.session, spec)
 
   let run: SubagentRun | undefined
   try {
-    run = await options.subagents.start('spawn', workerStartRequest(spec, options.parent, options.signal))
+    run = await options.subagents.start(
+      'spawn',
+      workerStartRequest(spec, options.parent, options.signal, provider?.capabilities ?? {
+        agentOptions: true,
+        outputSchema: true,
+        depthLimit: true,
+        toolFilter: true,
+        persona: false,
+      }),
+    )
   } catch {
     return failedStart(options.signal)
   }
@@ -405,7 +423,7 @@ export function mountSingleWorkerMode(
           // The durable run record is derived only from this actual request snapshot.
           const route = parseRequestRoute(event.data.header)
           if (route === undefined) return
-          if (session.events.some(entry => entry.type === 'dsh-plugin/run-started') || pending.has(session.id)) return
+          if (session.snapshotEvents().some(entry => entry.type === 'dsh-plugin/run-started') || pending.has(session.id)) return
           pending.set(session.id, session)
           queueMicrotask(() => {
             if (!active || pending.get(session.id) !== session) return

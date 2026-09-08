@@ -335,7 +335,7 @@ export function mountRootScheduling(
       }
       if (!sessions.has(agent.session)) {
         sessions.add(agent.session)
-        const restored = restoreScheduleSelection(agent.session.events, config, 'root')
+        const restored = restoreScheduleSelection(agent.session.snapshotEvents(), config, 'root')
         if (restored?.selectedAt !== undefined) {
           scheduler.hydrate?.(buildCapabilityRequest(config, input), restored.decision, restored.selectedAt)
         }

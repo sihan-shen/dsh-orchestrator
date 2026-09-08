@@ -56,7 +56,7 @@ export function mountDirectMode(ctx: Context, config: OrchestratorConfig): void 
       // The durable run record is derived only from this actual request snapshot.
       const route = parseRequestRoute(event.data.header)
       if (route === undefined) return
-      if (session.events.some(entry => entry.type === 'dsh-plugin/run-started') || pending.has(session.id)) return
+      if (session.snapshotEvents().some(entry => entry.type === 'dsh-plugin/run-started') || pending.has(session.id)) return
       // Session observers run while the triggering append holds its no-reentry guard.
       // Publish the durable companion record immediately after that boundary closes.
       pending.set(session.id, session)

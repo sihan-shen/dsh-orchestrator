@@ -1,4 +1,4 @@
-import type { Session, SessionId } from '@deepseek-ai/dsh-session'
+import type { Session, SessionId, SessionSeq } from '@deepseek-ai/dsh-session'
 import { parseScheduleSelectedV1 } from '@han_05/dsh-scheduling-contracts'
 import type { ParallelAggregateV1, ScheduleSelectedV1 } from '@han_05/dsh-scheduling-contracts'
 import {
@@ -113,7 +113,7 @@ function snapshotWorkerSpec(worker: WorkerSpecV1): WorkerSpecV1 {
  * @param input - Resolved run configuration identifiers.
  * @returns The appended event sequence number.
  */
-export function appendRunStarted(session: Session, input: RunStartedInput): number {
+export function appendRunStarted(session: Session, input: RunStartedInput): SessionSeq {
   return session.append('dsh-plugin/run-started', {
     schemaVersion: 1,
     mode: input.mode,
@@ -128,7 +128,7 @@ export function appendRunStarted(session: Session, input: RunStartedInput): numb
  * @param worker - Validated worker request.
  * @returns The appended event sequence number.
  */
-export function appendWorkerRequested(session: Session, worker: WorkerSpecV1): number {
+export function appendWorkerRequested(session: Session, worker: WorkerSpecV1): SessionSeq {
   return session.append('dsh-plugin/worker-requested', parseWorkerRequestedV1(snapshotWorkerSpec(worker), 'legacy')).seq
 }
 
@@ -139,7 +139,7 @@ export function appendWorkerRequested(session: Session, worker: WorkerSpecV1): n
  * @param handoff - Validated bounded child result.
  * @returns The appended event sequence number.
  */
-export function appendWorkerFinished(session: Session, childSessionId: SessionId, handoff: HandoffV1): number {
+export function appendWorkerFinished(session: Session, childSessionId: SessionId, handoff: HandoffV1): SessionSeq {
   return session.append('dsh-plugin/worker-finished', parseWorkerFinishedV1({
     schemaVersion: 1,
     childSessionId,
@@ -153,7 +153,7 @@ export function appendWorkerFinished(session: Session, childSessionId: SessionId
  * @param rejection - Stable rejection reason and counters.
  * @returns The appended event sequence number.
  */
-export function appendBudgetRejected(session: Session, rejection: BudgetRejectedInput): number {
+export function appendBudgetRejected(session: Session, rejection: BudgetRejectedInput): SessionSeq {
   return session.append('dsh-plugin/budget-rejected', {
     schemaVersion: 1,
     reason: rejection.reason,
@@ -168,11 +168,11 @@ export function appendBudgetRejected(session: Session, rejection: BudgetRejected
  * @param evidence - Bounded verification result.
  * @returns The appended event sequence number.
  */
-export function appendVerificationFinished(session: Session, evidence: VerificationEvidenceV1): number {
+export function appendVerificationFinished(session: Session, evidence: VerificationEvidenceV1): SessionSeq {
   return session.append('dsh-plugin/verification-finished', snapshotVerification(evidence)).seq
 }
 
 /** Append a validated, detached scheduler selection provenance record. */
-export function appendScheduleSelected(session: Session, selected: ScheduleSelectedV1): number {
+export function appendScheduleSelected(session: Session, selected: ScheduleSelectedV1): SessionSeq {
   return session.append('dsh-plugin/schedule-selected', parseScheduleSelectedV1(selected)).seq
 }

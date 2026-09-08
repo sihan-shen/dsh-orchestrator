@@ -16,6 +16,8 @@ import {
   type ParallelWorkerRunInput,
 } from '../src/parallel-worker.ts'
 
+Object.defineProperty(Session.prototype, 'events', { configurable: true, get(this: Session) { return this.snapshotEvents() } })
+
 const workerRef = `w:${'a'.repeat(32)}`
 const handoff: HandoffV1 = {
   schemaVersion: 1,
@@ -93,7 +95,15 @@ function fixture(start: (signal: AbortSignal) => Promise<SubagentRun> = async ()
     run.dispose = dispose
     return run
   }
-  const subagents = { start: startWithObservedDispose } as unknown as Pick<SubagentRuntime, 'start'>
+  const subagents = {
+    start: startWithObservedDispose,
+    getProvider: () => ({
+      name: 'spawn',
+      inheritsParentContext: false,
+      capabilities: { agentOptions: true, outputSchema: true, depthLimit: true, toolFilter: true, persona: false },
+      start: startWithObservedDispose,
+    }),
+  } as unknown as Pick<SubagentRuntime, 'start' | 'getProvider'>
   return {
     input: {
       node,
@@ -204,7 +214,7 @@ describe('admitted parallel leaf worker', () => {
       resolvedSchedule,
       parent: {} as Agent,
       signal: new AbortController().signal,
-      subagents: {} as Pick<SubagentRuntime, 'start'>,
+      subagents: {} as Pick<SubagentRuntime, 'start' | 'getProvider'>,
       registerWorkerId: () => workerRef,
     })).toEqual({
       schemaVersion: 1,
@@ -215,6 +225,22 @@ describe('admitted parallel leaf worker', () => {
       allowedTools: ['read_file'],
       expectedOutput: 'handoff-v1',
     })
+  })
+
+  it('rejects a route override without starting or publishing a nonexistent worker', async () => {
+    const runtime = fixture()
+    runtime.input.subagents.getProvider = () => ({
+      name: 'spawn',
+      inheritsParentContext: false,
+      capabilities: { agentOptions: false, outputSchema: true, depthLimit: true, toolFilter: true, persona: false },
+      async start() { throw new Error('must not start') },
+    })
+
+    await expect(runParallelWorker(runtime.input)).resolves.toMatchObject({
+      nodeResult: { status: 'failed', reason: 'start-failed' },
+    })
+    expect(runtime.starts).toEqual([])
+    expect(workerFinishedEvents(runtime)).toEqual([])
   })
 
   it.each([

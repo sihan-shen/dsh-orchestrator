@@ -310,7 +310,7 @@ export function fakeSpawnProvider(): SubagentProvider {
   return {
     name: 'spawn',
     inheritsParentContext: false,
-    capabilities: { outputSchema: true, depthLimit: true, toolFilter: true, persona: true },
+    capabilities: { agentOptions: true, outputSchema: true, depthLimit: true, toolFilter: true, persona: true },
     async start(request) {
       return {
         id: SessionId(`keyless-child:${request.parent.id}`),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
-import SessionStore, { Session, SessionId } from '@deepseek-ai/dsh-session'
+import SessionStore, { Session, SessionId, SessionLogOffset } from '@deepseek-ai/dsh-session'
 import {
   appendBudgetRejected,
   appendRunStarted,
@@ -10,6 +10,8 @@ import {
   appendWorkerRequested,
 } from '../src/events.ts'
 import type { HandoffV1, VerificationEvidenceV1, WorkerSpecV1 } from '../src/types.ts'
+
+Object.defineProperty(Session.prototype, 'events', { configurable: true, get(this: Session) { return this.snapshotEvents() } })
 
 const workerSpec: WorkerSpecV1 = {
   schemaVersion: 1,
@@ -141,6 +143,31 @@ describe('durable orchestrator events', () => {
     expect(session.events[1]?.data).not.toHaveProperty('workerRef')
     expect(session.events[2]?.data).not.toHaveProperty('fanoutId')
     expect(session.events[2]?.data).not.toHaveProperty('workerRef')
+  })
+
+  it('projects a seeded child from inheritedEventCount rather than its full seed length', () => {
+    const parent = Session.create(SessionId('seed-parent'))
+    appendRunStarted(parent, { mode: 'direct', provider: 'parent-provider', model: 'parent-model' })
+    const child = Session.create(SessionId('seed-child'), parent.snapshotEvents(), {
+      version: 0,
+      id: SessionId('seed-child'),
+      createdAt: 0,
+      isSeeded: true,
+      parentSession: parent.id,
+    }, SessionLogOffset(1))
+    appendWorkerRequested(child, workerSpec)
+
+    expect(child.header.isSeeded).toBe(true)
+    expect(child.inheritedEventCount).toBe(SessionLogOffset(1))
+    expect(child.ownEvents().map(event => event.type)).toEqual([
+      'session/end-seed',
+      'dsh-plugin/worker-requested',
+    ])
+    expect(child.ownEvents().some(event => event.type === 'dsh-plugin/run-started')).toBe(false)
+
+    const unseeded = Session.create(SessionId('unseeded-child'))
+    expect(unseeded.header.isSeeded).toBe(false)
+    expect(unseeded.inheritedEventCount).toBe(SessionLogOffset(0))
   })
 
   it('records JSON-safe snapshots without sensitive payload fields', () => {

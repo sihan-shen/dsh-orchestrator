@@ -13,6 +13,8 @@ import {
 import type { SchedulerResolver } from '../src/scheduling.ts'
 import type { HandoffV1, OrchestratorConfig } from '../src/types.ts'
 
+Object.defineProperty(Session.prototype, 'events', { configurable: true, get(this: Session) { return this.snapshotEvents() } })
+
 function deferred<T>() {
   let resolve = (_value: T | PromiseLike<T>) => undefined
   const promise = new Promise<T>(settle => { resolve = settle })
@@ -84,6 +86,14 @@ function mount(options: MountOptions = {}) {
     budgetRegistry,
     schedulerResolver,
     subagents: {
+      getProvider() {
+        return {
+          name: 'spawn',
+          inheritsParentContext: false,
+          capabilities: { agentOptions: true, outputSchema: true, depthLimit: true, toolFilter: true, persona: false },
+          async start() { throw new Error('not used') },
+        }
+      },
       async start(_provider, request) {
         starts.push(request)
         startObserved.resolve()

@@ -11,6 +11,8 @@ import { mountRootScheduling, type ResolvedScheduleV1, type SchedulerResolver } 
 import { createDelegateWorkerTool, HANDOFF_V1_JSON_SCHEMA, mountSingleWorkerMode, runWorker, SINGLE_WORKER_STARTUP_TIMEOUT_MS } from '../src/worker.ts'
 import type { HandoffV1, OrchestratorConfig } from '../src/types.ts'
 
+Object.defineProperty(Session.prototype, 'events', { configurable: true, get(this: Session) { return this.snapshotEvents() } })
+
 const workspaceRoot = '/workspace/ds-plugins'
 
 const config: OrchestratorConfig = {
@@ -184,6 +186,15 @@ class FakeSubagents {
 
   constructor(private readonly startRun: Start) {}
 
+  getProvider() {
+    return {
+      name: 'spawn',
+      inheritsParentContext: false,
+      capabilities: { agentOptions: true, outputSchema: true, depthLimit: true, toolFilter: true, persona: false },
+      start: this.startRun,
+    }
+  }
+
   start(provider: string, request: FakeRequest): Promise<FakeRun> {
     this.starts += 1
     this.providers.push(provider)
@@ -207,6 +218,7 @@ function rootSession(id = 'worker-root-session') {
     id: SessionId(id),
     createdAt: 0,
     cwd: workspaceRoot,
+    isSeeded: false,
   })
 }
 
@@ -440,6 +452,20 @@ describe('one-shot worker runtime', () => {
     expect(injected).toEqual([])
   })
 
+  it('rejects a route override when the provider lacks agentOptions before publication or start', async () => {
+    const { options, subagents } = workerOptions()
+    subagents.getProvider = () => ({
+      name: 'spawn',
+      inheritsParentContext: false,
+      capabilities: { agentOptions: false, outputSchema: true, depthLimit: true, toolFilter: true, persona: false },
+      start: async () => { throw new Error('must not start') },
+    })
+
+    await expect(runWorker(options)).resolves.toMatchObject({ status: 'failed' })
+    expect(subagents.starts).toBe(0)
+    expect(options.parent.session.events).toEqual([])
+  })
+
   it('returns a blocked handoff before publication when the caller is already cancelled', async () => {
     const controller = new AbortController()
     controller.abort(new Error('SECRET_TRANSCRIPT_MARKER'))
@@ -605,6 +631,7 @@ describe('delegate_worker tool', () => {
       createdAt: 0,
       cwd: workspaceRoot,
       parentSession: parent.session.id,
+      isSeeded: false,
     })
     const run = publishedRun(
       Promise.resolve({ stopReason: 'error', output: [] }),

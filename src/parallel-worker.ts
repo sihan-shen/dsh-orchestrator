@@ -1,6 +1,6 @@
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { SessionId } from '@deepseek-ai/dsh-session'
-import type { SubagentRun, SubagentRuntime } from '@deepseek-ai/dsh-subagent'
+import type { SubagentCapabilities, SubagentRun, SubagentRuntime } from '@deepseek-ai/dsh-subagent'
 import {
   MAX_PARALLEL_WORKER_FINISHED_PAYLOAD_BYTES,
   serializedPayloadBytes,
@@ -35,7 +35,7 @@ export interface ParallelWorkerRunInput {
   readonly resolvedSchedule: ResolvedScheduleV1
   readonly parent: Agent
   readonly signal: AbortSignal
-  readonly subagents: Pick<SubagentRuntime, 'start'>
+  readonly subagents: Pick<SubagentRuntime, 'start' | 'getProvider'>
   readonly registerWorkerId: (workerId: SessionId) => string
 }
 
@@ -238,12 +238,25 @@ export function parallelWorkerSpec(input: ParallelWorkerRunInput): WorkerSpecV1 
 /** Execute one already-admitted parallel leaf and publish only correlated durable evidence. */
 export async function runParallelWorker(input: ParallelWorkerRunInput): Promise<ParallelWorkerTerminalV1> {
   const spec = parallelWorkerSpec(input)
+  const provider = input.subagents.getProvider('spawn')
+  if (provider?.capabilities.agentOptions === false) {
+    return beforePublication(input, 'start-failed')
+  }
   appendScheduleSelected(input.parent.session, parallelScheduleSelected(input))
   appendParallelWorkerRequested(input.parent.session, parallelWorkerRequest(input, spec))
 
   let run: SubagentRun
   try {
-    run = await input.subagents.start('spawn', workerStartRequest(spec, input.parent, input.signal))
+    run = await input.subagents.start(
+      'spawn',
+      workerStartRequest(spec, input.parent, input.signal, provider?.capabilities ?? {
+        agentOptions: true,
+        outputSchema: true,
+        depthLimit: true,
+        toolFilter: true,
+        persona: false,
+      } satisfies SubagentCapabilities),
+    )
   } catch {
     return beforePublication(input, input.signal.aborted ? 'cancelled-before-start' : 'start-failed')
   }
