@@ -2,6 +2,8 @@
 
 `@han_05/dsh-orchestrator` is an out-of-tree DeepSeek Harness (DSH) bundle for a small, evidence-first coding-agent loop. It composes with the official `@deepseek-ai/dsh-base` bundle and never replaces the DSH agent loop or provider implementation.
 
+当前开发重点在dsh-code-intelligence项目，其他项目迭代暂停。
+
 ## Status and compatibility
 
 - Parent repository: [DS-Plugins](https://github.com/sihan-shen/DS-Plugins)
