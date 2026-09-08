@@ -250,6 +250,7 @@ export async function loadActualProfile(options: ProfileLoadOptions): Promise<Lo
       await mkdir(rootPluginModules, { recursive: true })
       const candidate = join(rootPluginModules, 'dsh-adaptive-scheduler')
       if (!existsSync(candidate)) {
+        await rm(candidate, { force: true })
         await symlink(join(root, 'packages/dsh-adaptive-scheduler'), candidate, process.platform === 'win32' ? 'junction' : 'dir')
         rootAdaptiveLink = candidate
       }
